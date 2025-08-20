@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Juego de Memoria</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #222;
+      color: #fff;
+      text-align: center;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+    }
+
+    #tablero {
+      display: grid;
+      grid-template-columns: repeat(4, 100px);
+      grid-gap: 15px;
+      justify-content: center;
+      margin: 20px auto;
+    }
+
+    .carta {
+      width: 100px;
+      height: 100px;
+      background: #444;
+      border-radius: 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 2rem;
+      cursor: pointer;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.5s;
+    }
+
+    .carta.volteada {
+      transform: rotateY(180deg);
+    }
+
+    .cara {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .frente {
+      background: #555;
+    }
+
+    .atras {
+      background: #00bcd4;
+      transform: rotateY(180deg);
+      font-size: 2rem;
+    }
+
+    #mensaje {
+      margin-top: 20px;
+      font-size: 1.2rem;
+    }
+
+    #reiniciar {
+      margin-top: 15px;
+      padding: 10px 20px;
+      border: none;
+      background: #00bcd4;
+      color: #fff;
+      border-radius: 5px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    #reiniciar:hover {
+      background: #0097a7;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Juego de Memoria 🃏</h1>
+  <div id="tablero"></div>
+  <div id="mensaje"></div>
+  <button id="reiniciar">Reiniciar</button>
+
+  <script>
+    const tablero = document.getElementById("tablero");
+    const mensaje = document.getElementById("mensaje");
+    const reiniciarBtn = document.getElementById("reiniciar");
+
+    const iconos = ["🍎","🍌","🍇","🍉","🍓","🍒","🥝","🍍"];
+    let cartas = [];
+    let primera = null;
+    let segunda = null;
+    let bloqueado = false;
+    let parejasEncontradas = 0;
+
+    function iniciarJuego() {
+      tablero.innerHTML = "";
+      mensaje.textContent = "";
+      parejasEncontradas = 0;
+
+      // Duplicar y mezclar cartas
+      cartas = [...iconos, ...iconos]
+        .sort(() => Math.random() - 0.5);
+
+      cartas.forEach((icono, index) => {
+        const carta = document.createElement("div");
+        carta.classList.add("carta");
+        carta.dataset.icono = icono;
+        carta.dataset.index = index;
+
+        carta.innerHTML = `
+          <div class="cara frente"></div>
+          <div class="cara atras">${icono}</div>
+        `;
+
+        carta.addEventListener("click", voltearCarta);
+        tablero.appendChild(carta);
+      });
+    }
+
+    function voltearCarta(e) {
+      if (bloqueado) return;
+
+      const carta = e.currentTarget;
+
+      if (carta.classList.contains("volteada")) return;
+
+      carta.classList.add("volteada");
+
+      if (!primera) {
+        primera = carta;
+      } else if (!segunda) {
+        segunda = carta;
+        verificarPareja();
+      }
+    }
+
+    function verificarPareja() {
+      bloqueado = true;
+
+      const icono1 = primera.dataset.icono;
+      const icono2 = segunda.dataset.icono;
+
+      if (icono1 === icono2) {
+        parejasEncontradas++;
+        primera = null;
+        segunda = null;
+        bloqueado = false;
+
+        if (parejasEncontradas === iconos.length) {
+          mensaje.textContent = "🎉 ¡Has encontrado todas las parejas!";
+        }
+      } else {
+        setTimeout(() => {
+          primera.classList.remove("volteada");
+          segunda.classList.remove("volteada");
+          primera = null;
+          segunda = null;
+          bloqueado = false;
+        }, 1000);
+      }
+    }
+
+    reiniciarBtn.addEventListener("click", iniciarJuego);
+
+    iniciarJuego();
+  </script>
+</body>
+</html>
